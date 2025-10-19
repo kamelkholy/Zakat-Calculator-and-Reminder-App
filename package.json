@@ -1,0 +1,40 @@
+{
+  "name": "zakat-calculator-app",
+  "version": "1.0.0",
+  "description": "Zakat Calculator and Reminder App - Clean Architecture Solution",
+  "private": true,
+  "workspaces": [
+    "src/*",
+    "backend/*"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "clean": "rimraf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "mobile:start": "cd src/Presentation/Mobile && npm start",
+    "mobile:android": "cd src/Presentation/Mobile && npm run android",
+    "mobile:ios": "cd src/Presentation/Mobile && npm run ios",
+    "backend:dev": "npm run backend:dev --workspaces",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.50.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.2.0",
+    "rimraf": "^5.0.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

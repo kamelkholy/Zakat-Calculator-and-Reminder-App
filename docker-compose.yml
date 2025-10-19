@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: zakat-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: zakat_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - zakat-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: zakat-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - zakat-network
+
+  asset-service:
+    build:
+      context: ./backend/AssetManagementService
+      dockerfile: Dockerfile
+    container_name: zakat-asset-service
+    restart: always
+    environment:
+      PORT: 3001
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/zakat_db?authSource=admin
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3001:3001"
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - zakat-network
+
+  zakat-calculation-service:
+    build:
+      context: ./backend/ZakatCalculationService
+      dockerfile: Dockerfile
+    container_name: zakat-calculation-service
+    restart: always
+    environment:
+      PORT: 3002
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3002:3002"
+    depends_on:
+      - redis
+    networks:
+      - zakat-network
+
+  reminder-service:
+    build:
+      context: ./backend/ReminderService
+      dockerfile: Dockerfile
+    container_name: zakat-reminder-service
+    restart: always
+    environment:
+      PORT: 3003
+      MONGODB_URI: mongodb://admin:password123@mongodb:27017/zakat_db?authSource=admin
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - zakat-network
+
+  api-gateway:
+    build:
+      context: ./backend/APIGateway
+      dockerfile: Dockerfile
+    container_name: zakat-api-gateway
+    restart: always
+    environment:
+      PORT: 3000
+      ASSET_SERVICE_URL: http://asset-service:3001
+      ZAKAT_SERVICE_URL: http://zakat-calculation-service:3002
+      REMINDER_SERVICE_URL: http://reminder-service:3003
+    ports:
+      - "3000:3000"
+    depends_on:
+      - asset-service
+      - zakat-calculation-service
+      - reminder-service
+    networks:
+      - zakat-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  zakat-network:
+    driver: bridge
