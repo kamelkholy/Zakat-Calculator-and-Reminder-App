@@ -3,10 +3,6 @@
   "version": "1.0.0",
   "description": "Zakat Calculator and Reminder App - Clean Architecture Solution",
   "private": true,
-  "workspaces": [
-    "src/*",
-    "backend/*"
-  ],
   "scripts": {
     "build": "tsc -b",
     "clean": "rimraf dist",
