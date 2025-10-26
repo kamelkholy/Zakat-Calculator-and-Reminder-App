@@ -12,14 +12,7 @@ export class AssetType {
     'BUSINESS_INVENTORY',
     'BUSINESS_ASSETS',
     'INVESTMENT_REAL_ESTATE',
-    'CRYPTOCURRENCY',
     'RECEIVABLE_DEBTS',
-  ];
-
-  private static readonly NON_ZAKATABLE_TYPES = [
-    'PERSONAL_RESIDENCE',
-    'PERSONAL_VEHICLE',
-    'PERSONAL_JEWELRY_IN_USE',
   ];
 
   constructor(private readonly _type: string) {
@@ -52,10 +45,7 @@ export class AssetType {
   }
 
   private isValidType(type: string): boolean {
-    return (
-      AssetType.ZAKATABLE_TYPES.includes(type) ||
-      AssetType.NON_ZAKATABLE_TYPES.includes(type)
-    );
+    return AssetType.ZAKATABLE_TYPES.includes(type);
   }
 
   // Factory methods for common asset types
@@ -73,10 +63,6 @@ export class AssetType {
 
   static stocks(): AssetType {
     return new AssetType('STOCKS');
-  }
-
-  static cryptocurrency(): AssetType {
-    return new AssetType('CRYPTOCURRENCY');
   }
 
   static businessInventory(): AssetType {
