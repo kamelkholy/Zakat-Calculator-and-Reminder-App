@@ -60,8 +60,6 @@ export class ServiceRegistry {
       'zakat-service': process.env.ZAKAT_SERVICE_URL || 'http://localhost:3002',
       'reminder-service': process.env.REMINDER_SERVICE_URL || 'http://localhost:3003',
       'user-service': process.env.USER_SERVICE_URL || 'http://localhost:3004',
-      'reports-service': process.env.REPORTS_SERVICE_URL || 'http://localhost:3005',
-      'content-service': process.env.CONTENT_SERVICE_URL || 'http://localhost:3006',
     };
 
     const results: Record<string, boolean> = {};

@@ -6,8 +6,6 @@ const ASSET_SERVICE_URL = process.env.ASSET_SERVICE_URL || 'http://localhost:300
 const ZAKAT_SERVICE_URL = process.env.ZAKAT_SERVICE_URL || 'http://localhost:3002';
 const REMINDER_SERVICE_URL = process.env.REMINDER_SERVICE_URL || 'http://localhost:3003';
 const USER_SERVICE_URL = process.env.USER_SERVICE_URL || 'http://localhost:3004';
-const REPORTS_SERVICE_URL = process.env.REPORTS_SERVICE_URL || 'http://localhost:3005';
-const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE_URL || 'http://localhost:3006';
 
 export function setupRoutes(): Router {
   const router = Router();
@@ -79,25 +77,6 @@ export function setupRoutes(): Router {
         proxyReq.setHeader('X-User-Id', req.user.userId);
       }
     },
-  }));
-
-  // Reports Service
-  router.use('/reports', /*authMiddleware,*/ createProxyMiddleware({
-    target: REPORTS_SERVICE_URL,
-    changeOrigin: true,
-    pathRewrite: { '^/api/v1/reports': '/api/reports' },
-    onProxyReq: (proxyReq, req: any) => {
-      if (req.user) {
-        proxyReq.setHeader('X-User-Id', req.user.userId);
-      }
-    },
-  }));
-
-  // Educational Content Service (public access)
-  router.use('/content', createProxyMiddleware({
-    target: CONTENT_SERVICE_URL,
-    changeOrigin: true,
-    pathRewrite: { '^/api/v1/content': '/api/content' },
   }));
 
   return router;
