@@ -1,5 +1,5 @@
 import { IAssetRepository } from '../../Domain/Interfaces/IAssetRepository';
-import { Asset } from '../../Domain/Entities/Asset';
+import { Asset } from '../../Domain/Entities';
 import { AssetType } from '../../Domain/ValueObjects/AssetType';
 import { Money } from '../../Domain/ValueObjects/Money';
 import { HijriDate } from '../../Domain/ValueObjects/HijriDate';

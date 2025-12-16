@@ -1,7 +1,12 @@
 import { Money } from '../ValueObjects/Money';
-import { Asset } from '../Entities/Asset';
+import { MoneyAsset, StockAsset, PreciousMetalAsset } from '../Entities';
 import { Liability } from '../Entities/Liability';
 import { HijriDate } from '../ValueObjects/HijriDate';
+
+/**
+ * Union type for all asset types
+ */
+export type Asset = MoneyAsset | StockAsset | PreciousMetalAsset;
 
 /**
  * ZakatCalculationService - Domain service for calculating zakat obligations
@@ -12,16 +17,24 @@ export class ZakatCalculationService {
   /**
    * Calculate zakat on a single asset
    */
-  calculateAssetZakat(asset: Asset): Money {
-    if (!asset.isZakatable()) {
-      return Money.zero(asset.currentValue.currency);
+  calculateAssetZakat(asset: Asset, pricePerGram?: Money): Money {
+    let zakatableValue: Money;
+    
+    if (asset instanceof PreciousMetalAsset) {
+      if (!pricePerGram) {
+        throw new Error('Price per gram is required for precious metal assets');
+      }
+      zakatableValue = asset.getZakatableValue(pricePerGram);
+    } else {
+      zakatableValue = asset.getZakatableValue();
     }
-
-    return asset.currentValue.percentage(this.ZAKAT_RATE);
+    
+    return zakatableValue.percentage(this.ZAKAT_RATE);
   }
 
   /**
    * Calculate total zakatable wealth from all assets
+   * Note: PreciousMetalAssets are excluded as they require current market price
    */
   calculateTotalZakatableWealth(
     assets: Asset[],
@@ -31,14 +44,33 @@ export class ZakatCalculationService {
       throw new Error('No assets provided');
     }
 
-    const currency = assets[0].currentValue.currency;
+    // Find first non-precious-metal asset to get currency
+    const firstNonMetalAsset = assets.find(
+      a => a instanceof MoneyAsset || a instanceof StockAsset
+    );
+    
+    if (!firstNonMetalAsset) {
+      throw new Error('At least one MoneyAsset or StockAsset is required to determine currency');
+    }
+
+    const currency = (firstNonMetalAsset instanceof MoneyAsset 
+      ? firstNonMetalAsset.currentValue 
+      : firstNonMetalAsset.pricePerShare).currency;
 
     // Sum all zakatable assets
     let totalWealth = Money.zero(currency);
     for (const asset of assets) {
-      if (asset.isZakatable()) {
-        totalWealth = totalWealth.add(asset.currentValue);
+      let assetValue: Money;
+      if (asset instanceof MoneyAsset) {
+        assetValue = asset.getZakatableValue();
+      } else if (asset instanceof StockAsset) {
+        assetValue = asset.getZakatableValue();
+      } else {
+        // PreciousMetalAsset - skip if no price available
+        // Should be calculated separately with market price
+        continue;
       }
+      totalWealth = totalWealth.add(assetValue);
     }
 
     // Deduct deductible liabilities
@@ -79,7 +111,7 @@ export class ZakatCalculationService {
     const ineligibleAssets: Asset[] = [];
 
     for (const asset of assets) {
-      if (asset.isZakatable() && asset.hasCompletedHawl(currentDate)) {
+      if (asset.hasCompletedHawl(currentDate)) {
         eligibleAssets.push(asset);
       } else {
         ineligibleAssets.push(asset);

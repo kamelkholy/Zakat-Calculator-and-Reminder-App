@@ -1,7 +1,12 @@
 import { Reminder, ReminderType, ReminderStatus } from '../Entities/Reminder';
-import { Asset } from '../Entities/Asset';
+import { MoneyAsset, StockAsset, PreciousMetalAsset } from '../Entities';
 import { HijriDate } from '../ValueObjects/HijriDate';
 import { User } from '../Entities/User';
+
+/**
+ * Union type for all asset types
+ */
+export type Asset = MoneyAsset | StockAsset | PreciousMetalAsset;
 
 /**
  * ReminderService - Domain service for managing zakat reminders
@@ -18,7 +23,7 @@ export class ReminderService {
     const hawlCompletionDate = asset.getHawlCompletionDate();
     const reminderDate = this.subtractDays(hawlCompletionDate, remindDaysBefore);
 
-    const message = `Your ${asset.description} will complete its hawl on ${hawlCompletionDate.toString()}. Zakat may be due.`;
+    const message = `Your ${asset.name} will complete its hawl on ${hawlCompletionDate.toString()}. Zakat may be due.`;
 
     return new Reminder(
       this.generateId(),
@@ -110,14 +115,12 @@ export class ReminderService {
 
     if (user.notificationPreferences.hawlCompletionReminder) {
       for (const asset of assets) {
-        if (asset.isZakatable() && !asset.zakatPaidStatus) {
-          const hawlDate = asset.getHawlCompletionDate();
-          const daysUntil = this.calculateDaysUntil(currentDate, hawlDate);
+        const hawlDate = asset.getHawlCompletionDate();
+        const daysUntil = this.calculateDaysUntil(currentDate, hawlDate);
 
-          // Create reminder 7 days before hawl completion
-          if (daysUntil <= 7 && daysUntil > 0) {
-            reminders.push(this.createHawlCompletionReminder(user.id, asset));
-          }
+        // Create reminder 7 days before hawl completion
+        if (daysUntil <= 7 && daysUntil > 0) {
+          reminders.push(this.createHawlCompletionReminder(user.id, asset));
         }
       }
     }
